@@ -14,7 +14,8 @@ class CarMake(models.Model):
     description = models.TextField(null=True)
     def __str__(self):
         return self.name
-
+    def get_name(self):
+        return self.name
 # <HINT> Create a Car Model model `class CarModel(models.Model):`:
 # - Many-To-One relationship to Car Make model (One Car Make has many Car Models, using ForeignKey field)
 # - Name
@@ -29,6 +30,12 @@ class CarModel(models.Model):
     dealer_id = models.IntegerField(null=False)
     type = models.CharField(null=False, max_length=30, choices=[('Sedan', 'Sedan'), ('SUV', 'SUV'), ('Wagon', 'Wagon')])
     year = models.DateField(null=False)
+    def get_name(self):
+        return self.name
+    def get_carmake_name(self):
+        return self.carmakes.get_name()
+    def get_year(self):
+        return self.year.year
     def __str__(self):
         return self.name
 # <HINT> Create a plain Python class `CarDealer` to hold dealer data
@@ -45,7 +52,7 @@ class CarDealer(object):
         self.short_name = short_name
         self.full_name = full_name
     def __str__(self):
-        return self.name
+        return self.full_name
         
 
 # <HINT> Create a plain Python class `DealerReview` to hold review data

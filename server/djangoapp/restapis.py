@@ -1,24 +1,20 @@
 import os
+from re import A
 import requests
 import json
 from .models import CarMake, CarModel, CarDealer, DealerReview
 # import related models here
 from requests.auth import HTTPBasicAuth
-
+from dotenv import load_dotenv
+load_dotenv()
 api_key = os.environ.get("WATSON_API_KEY")
 # Create a `get_request` to make HTTP GET requests
 # e.g., response = requests.get(url, params=params, headers={'Content-Type': 'application/json'},
 #                                     auth=HTTPBasicAuth('apikey', api_key))
-def get_request(url, api_key=None, **kwargs):
-    print(kwargs)
+def get_request(url, **kwargs):
     print("GET from {}".format(url))
     try:
-        if api_key:
-            response = requests.get(url, headers={'Content-Type': 'application/json'},
-                                        auth=HTTPBasicAuth('apikey',api_key),
-                                        params=kwargs)
-        else:
-            response = requests.get(url, headers={'Content-Type': 'application/json'},
+        response = requests.get(url, headers={'Content-Type': 'application/json'},
                                         params=kwargs)
     except:
         print("Error: GET request failed")
@@ -29,10 +25,15 @@ def get_request(url, api_key=None, **kwargs):
 
 # Create a `post_request` to make HTTP POST requests
 # e.g., response = requests.post(url, params=kwargs, json=payload)
-def post_request(url, json_payload, **kwargs):
+def post_request(url, json_payload, analyze=False, **kwargs):
     print("POST to {}".format(url))
     try:
-        response = requests.post(url, headers={'Content-Type': 'application/json'},
+        if api_key and analyze==True:
+            response = requests.post(url, headers={'Content-Type': 'application/json'},
+                                        auth=HTTPBasicAuth('apikey',api_key),
+                                        params=kwargs,json=json_payload)
+        else:
+            response = requests.post(url, headers={'Content-Type': 'application/json'},
                                     params=kwargs,json=json_payload)
     except:
         print("Error: POST request failed")
@@ -62,6 +63,27 @@ def get_dealers_from_cf(url, **kwargs):
                                    st=dealer_doc["st"],
                                    zipcode=dealer_doc["zip"])
             results.append(car_dealer)
+    return results
+
+def get_dealers_from_cf_by_id(url, dealer_id, **kwargs):
+    results = []
+    json_result = get_request(url)
+    if json_result:
+        dealers = json_result["body"]
+        for dealer_doc in dealers:
+            car_dealer = CarDealer(address=dealer_doc["address"],
+                                   city=dealer_doc["city"],
+                                   full_name=dealer_doc["full_name"],
+                                   dealer_id=dealer_doc["id"],
+                                   lat=dealer_doc["lat"],
+                                   long=dealer_doc["long"],
+                                   short_name=dealer_doc["short_name"],
+                                   state=dealer_doc["state"],
+                                   st=dealer_doc["st"],
+                                   zipcode=dealer_doc["zip"])
+            if car_dealer.dealer_id == dealer_id:
+                results.append(car_dealer)
+    
     return results
 
 # Create a get_dealer_reviews_from_cf method to get reviews by dealer id from a cloud function
@@ -96,14 +118,15 @@ def get_dealer_reviews_from_cf(url, dealer_id):
 # - Call get_request() with specified arguments
 # - Get the returned sentiment label such as Positive or Negative
 def analyze_review_sentiments(dealerreview):
-    url = "https://gateway.watsonplatform.net/natural-language-understanding/api/v1/analyze?version=2018-03-19"
+    url = "https://api.us-south.natural-language-understanding.watson.cloud.ibm.com/instances/8802e40a-4cc1-4351-9ea6-e5a9644bb4f8/v1/analyze?version=2021-08-01"
     params = {
         "text": dealerreview,
         "features": {
             "sentiment": {}
         }
     }
-    json_result = get_request(url, params=params, api_key=api_key)
+    json_result = post_request(url,analyze=True,json_payload=params)
+    print(json_result)
     if json_result:
         sentiment = json_result["sentiment"]["document"]["label"]
     return sentiment
