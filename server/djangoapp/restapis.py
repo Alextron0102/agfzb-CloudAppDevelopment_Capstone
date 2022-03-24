@@ -7,7 +7,6 @@ from .models import CarMake, CarModel, CarDealer, DealerReview
 from requests.auth import HTTPBasicAuth
 from dotenv import load_dotenv
 load_dotenv()
-api_key = os.environ.get("WATSON_API_KEY")
 # Create a `get_request` to make HTTP GET requests
 # e.g., response = requests.get(url, params=params, headers={'Content-Type': 'application/json'},
 #                                     auth=HTTPBasicAuth('apikey', api_key))
@@ -28,6 +27,7 @@ def get_request(url, **kwargs):
 def post_request(url, json_payload, analyze=False, **kwargs):
     print("POST to {}".format(url))
     try:
+        api_key = os.environ.get("WATSON_API_KEY")
         if api_key and analyze==True:
             response = requests.post(url, headers={'Content-Type': 'application/json'},
                                         auth=HTTPBasicAuth('apikey',api_key),
