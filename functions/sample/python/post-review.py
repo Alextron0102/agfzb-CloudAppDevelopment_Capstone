@@ -31,21 +31,3 @@ def main(dict):
         print("connection error")
         return {"statusCode": 500, "body": err}
     return {"statusCode": 200, "body": "posted correctly"}
-print(main(
-    dict={
-    "COUCH_URL":"https://c93a5693-60fe-4794-9096-8fb8c1a971a4-bluemix.cloudantnosqldb.appdomain.cloud",
-    "IAM_API_KEY":"CpPxqqJkKARKtG9xst7WBh_ghl9eO4Jf9fu3MHVJgVgr",
-    "review": {
-        "id": 1114,
-        "name": "Upkar Lidder",
-        "dealership": 15,
-        "review": "Great service!",
-        "purchase": False,
-        "another": "field",
-        "purchase_date": "02/16/2021",
-        "car_make": "Audi",
-        "car_model": "Car",
-        "car_year": 2021
-        }
-    }
-    ))
